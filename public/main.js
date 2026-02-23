@@ -122,6 +122,19 @@ function init() {
         savedMinHeight: null
     };
 
+    // Helper: clamp a panel position inside the viewport with a small margin
+    const clampPosition = (left, top, width, height, margin = 10) => {
+        const w = Math.max(0, Math.round(Number(left) || 0));
+        const h = Math.max(0, Math.round(Number(top) || 0));
+        const panelW = Math.max(0, Math.round(Number(width) || 0));
+        const panelH = Math.max(0, Math.round(Number(height) || 0));
+        const maxLeft = Math.max(0, window.innerWidth - panelW - margin);
+        const maxTop = Math.max(0, window.innerHeight - panelH - margin);
+        const clampedLeft = Math.min(Math.max(0, w), maxLeft);
+        const clampedTop = Math.min(Math.max(0, h), maxTop);
+        return { left: clampedLeft, top: clampedTop };
+    };
+
     // Panel toggle (collapse/expand)
     const toggle = document.getElementById('panel-toggle');
     if (toggle && panel) {
@@ -134,6 +147,17 @@ function init() {
                 panelState.savedHeight = panel.style.height;
                 panelState.savedLeft = panel.style.left;
                 panelState.savedTop = panel.style.top;
+                // Clamp saved left/top to viewport based on current panel size
+                (function clampSaved() {
+                    const rect = panel.getBoundingClientRect();
+                    const sw = parseInt(panelState.savedWidth) || Math.round(rect.width);
+                    const sh = parseInt(panelState.savedHeight) || Math.round(rect.height);
+                    const rawLeft = parseInt(panelState.savedLeft) || Math.round(rect.left);
+                    const rawTop = parseInt(panelState.savedTop) || Math.round(rect.top);
+                    const c = clampPosition(rawLeft, rawTop, sw, sh);
+                    panelState.savedLeft = c.left + 'px';
+                    panelState.savedTop = c.top + 'px';
+                })();
                 panelState.savedMinWidth = panel.style.minWidth;
                 panelState.savedMinHeight = panel.style.minHeight;
                 
@@ -151,11 +175,18 @@ function init() {
                 panel.style.transition = 'none';
                 
                 setTimeout(() => {
-                    // 恢复所有保存的样式
+                    // 恢复所有保存的样式（对位置做一次夹紧，避免 viewport clamping 导致差异）
                     panel.style.width = panelState.savedWidth;
                     panel.style.height = panelState.savedHeight;
-                    panel.style.left = panelState.savedLeft;
-                    panel.style.top = panelState.savedTop;
+                    // Compute numeric width/height for clamp (fallback to rect if needed)
+                    const rect = panel.getBoundingClientRect();
+                    const sw = parseInt(panelState.savedWidth) || Math.round(rect.width);
+                    const sh = parseInt(panelState.savedHeight) || Math.round(rect.height);
+                    const rawLeft = parseInt(panelState.savedLeft);
+                    const rawTop = parseInt(panelState.savedTop);
+                    const c = clampPosition(isNaN(rawLeft) ? rect.left : rawLeft, isNaN(rawTop) ? rect.top : rawTop, sw, sh);
+                    panel.style.left = c.left + 'px';
+                    panel.style.top = c.top + 'px';
                     panel.style.minWidth = panelState.savedMinWidth;
                     panel.style.minHeight = panelState.savedMinHeight;
                     
@@ -186,12 +217,14 @@ function init() {
             if (!dragging) return;
             const newLeft = e.clientX - offsetX;
             const newTop = e.clientY - offsetY;
-            panel.style.left = `${newLeft}px`;
-            panel.style.top = `${newTop}px`;
-            panel.style.setProperty('--panel-left', `${newLeft}px`);
+            const rect = panel.getBoundingClientRect();
+            const clamped = clampPosition(newLeft, newTop, rect.width, rect.height);
+            panel.style.left = `${clamped.left}px`;
+            panel.style.top = `${clamped.top}px`;
+            panel.style.setProperty('--panel-left', `${clamped.left}px`);
             // Update saved position for collapse/expand (store as px strings)
-            panelState.savedLeft = `${newLeft}px`;
-            panelState.savedTop = `${newTop}px`;
+            panelState.savedLeft = `${clamped.left}px`;
+            panelState.savedTop = `${clamped.top}px`;
         });
         window.addEventListener('pointerup', (e) => {
             if (!dragging) return;
