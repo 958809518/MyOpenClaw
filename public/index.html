@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧城市 - 多模态定制化生成系统</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.1/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <div class="gui-panel">
+        <div class="header" id="gui-header">
+            <h2>智慧城市 AI Agent</h2>
+            <div style="display:flex;gap:8px;align-items:center">
+                <span class="status-badge">算力节点：在线</span>
+                <button id="panel-toggle" class="panel-toggle" aria-label="折叠面板">⟨</button>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <label>生成意图 (多模态输入)</label>
+            <div class="input-row">
+                <input type="text" id="intent-input" placeholder="例如：生成高密度住宅区，增加安防设施...">
+                <button id="btn-generate" class="btn-primary">生成</button>
+            </div>
+            <div class="modality-tags">
+                <span class="tag active">文本</span>
+                <span class="tag">语音</span>
+                <span class="tag">图像</span>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>约束条件 (文档：定制化内容生成)</label>
+            <select id="density-select">
+                <option value="low">低密度 (生态)</option>
+                <option value="high" selected>高密度 (集约)</option>
+            </select>
+        </div>
+
+        <div class="log-console" id="console-log">
+            <div class="log-entry">系统初始化完成...</div>
+            <div class="log-entry">加载 dVAE 编码器集群... 就绪</div>
+        </div>
+
+        <div class="stats-panel">
+            <div class="stat-item">
+                <span class="label">FPS</span>
+                <span class="value" id="fps-counter">60</span>
+            </div>
+            <div class="stat-item">
+                <span class="label">建筑数</span>
+                <span class="value" id="building-count">0</span>
+            </div>
+        </div>
+        <div class="resize-handle" id="resize-handle" title="拖动右下角缩放面板">↗</div>
+    </div>
+
+    <script src="/cityGenerator.js"></script>
+    <script src="/main.js"></script>
+</body>
+</html>

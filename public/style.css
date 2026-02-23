@@ -1,0 +1,183 @@
+:root {
+    --primary: #00f2ff;
+    --bg-glass: rgba(16, 20, 30, 0.75);
+    --border: rgba(255, 255, 255, 0.1);
+    --text: #ffffff;
+}
+
+body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; background: #000; color: var(--text); }
+#canvas-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
+
+.gui-panel {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 320px;
+    min-width: 240px;
+    min-height: 150px;
+    background: var(--bg-glass);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    z-index: 10;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    touch-action: none;
+    transition: left 0.4s ease, opacity 0.3s ease, width 0.2s ease, height 0.2s ease;
+}
+
+.gui-panel.dragging { 
+    transition: none; 
+    opacity: 0.95; 
+}
+
+/* 折叠样式：隐藏内容，只显示把手和切换按钮 */
+.gui-panel.collapsed {
+    width: 50px;
+    height: 50px;
+    padding: 0;
+    opacity: 0.7;
+    overflow: visible;
+}
+
+.gui-panel.collapsed .header {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 50px;
+    height: 50px;
+}
+
+.gui-panel.collapsed .header h2 {
+    display: none !important;
+}
+
+.gui-panel.collapsed .header .status-badge {
+    display: none !important;
+}
+
+.gui-panel.collapsed .header #panel-toggle {
+    font-size: 20px;
+    padding: 4px 6px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+
+.gui-panel.collapsed > div:not(.header) {
+    display: none !important;
+}
+
+.gui-panel.collapsed .resize-handle {
+    display: flex !important;
+    right: -14px;
+    bottom: -14px;
+}
+
+/* 展开状态的平滑过渡 */
+.gui-panel:not(.collapsed) {
+    left: var(--panel-left, 20px);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* 折叠时的压缩效果 - 内容隐藏但把手可见 */
+.gui-panel.collapsed {
+    overflow: hidden;
+}
+
+.panel-toggle {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.panel-toggle:hover {
+    background: rgba(255,255,255,0.12);
+}
+
+/* 缩放把手 - 始终可见且大 */
+.resize-handle {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    right: -14px;
+    bottom: 10px;
+    background: linear-gradient(135deg, rgba(0,242,255,0.4), rgba(0,242,255,0.15));
+    border: 2px solid rgba(0,242,255,0.6);
+    border-radius: 6px;
+    cursor: nwse-resize;
+    z-index: 31;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: var(--primary);
+    font-weight: bold;
+    transition: all 0.2s;
+    box-shadow: 0 0 8px rgba(0,242,255,0.3);
+    user-select: none;
+}
+
+.resize-handle:hover {
+    background: linear-gradient(135deg, rgba(0,242,255,0.6), rgba(0,242,255,0.4));
+    border-color: rgba(0,242,255,0.9);
+    transform: scale(1.15);
+    box-shadow: 0 0 15px rgba(0,242,255,0.5);
+}
+
+.resize-handle:active {
+    background: linear-gradient(135deg, rgba(0,242,255,0.8), rgba(0,242,255,0.6));
+    transform: scale(1.05);
+}
+
+/* 当面板收起时，把手始终可见和可交互 */
+.gui-panel.collapsed .resize-handle {
+    right: -14px;
+    bottom: 10px;
+    pointer-events: auto;
+    z-index: 100;
+}
+
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+.header h2 { margin: 0; font-size: 18px; background: linear-gradient(90deg, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.status-badge { font-size: 10px; background: rgba(0, 255, 128, 0.2); color: #00ff80; padding: 2px 6px; border-radius: 4px; }
+
+.control-group { margin-bottom: 15px; }
+label { display: block; font-size: 12px; color: #aaa; margin-bottom: 5px; }
+.input-row { display: flex; gap: 5px; }
+input, select { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 4px; width: 100%; outline: none; }
+.btn-primary { background: var(--primary); border: none; color: #000; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+.btn-primary:hover { box-shadow: 0 0 10px var(--primary); }
+
+.modality-tags { display: flex; gap: 5px; margin-top: 5px; }
+.tag { font-size: 10px; padding: 2px 6px; border: 1px solid var(--border); border-radius: 10px; color: #888; cursor: pointer; }
+.tag.active { border-color: var(--primary); color: var(--primary); }
+
+.log-console {
+    height: 100px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 4px;
+    padding: 5px;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 11px;
+    color: #0f0;
+    margin-bottom: 15px;
+    border: 1px solid var(--border);
+}
+.log-entry { margin: 2px 0; }
+
+.stats-panel { display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 10px; }
+.stat-item { text-align: center; }
+.stat-item .label { font-size: 10px; color: #888; display: block; }
+.stat-item .value { font-size: 16px; font-weight: bold; color: var(--primary); }
